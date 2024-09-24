@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: bitnami/postgresql:latest
+    container_name: PostAirTeste
+    environment:
+      - POSTGRESQL_USERNAME=bruno
+      - POSTGRESQL_PASSWORD=123
+      - POSTGRESQL_DATABASE=postegresAirflow
+      - POSTGRESQL_POSTGRES_PASSWORD=123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./crypto_opensouce_lakehouse_data_container/postegres/data:/bitnami/postgresql
+    networks:
+      - lakehouse-net
+
+  airflow:
+    image: bitnami/airflow:latest
+    container_name: airflow-container
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://bruno:123@postgresql:5432/postegresAirflow
+      - AIRFLOW__CORE__FERNET_KEY=xCm03biQbfFdTvcgFu-cB7xndtx-uUJC4lUnLRcO_3Q=
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./crypto_opensouce_lakehouse_data_container/airflow/logs:/bitnami/airflow
+    depends_on:
+      - postgresql
+    networks:
+      - lakehouse-net
+
+  minio:
+    image: bitnami/minio:latest
+    container_name: minio-lakehouse
+    environment:
+      - MINIO_ROOT_USER=bruno
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: minio server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./crypto_opensouce_lakehouse_data_container/data_persist/data:/data
+      - ./crypto_opensouce_lakehouse_data_container/data_persist/config:/opt/bitnami/minio/.minio
+    networks:
+      - lakehouse-net
+
+  hive:
+    image: apache/hive:4.0.0
+    container_name: hive-container
+    environment:
+      - JAVA_HOME=/usr/local/openjdk-8
+      - HADOOP_HOME=/opt/hadoop
+      - HIVE_HOME=/opt/hive
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+      - "9083:9083"
+    networks:
+      - lakehouse-net
+
+  tensorflow:
+    image: tensorflow/tensorflow:nightly-gpu-jupyter
+    container_name: crypto-ia-project
+    command: bash -c "source /etc/bash.bashrc && jupyter notebook --notebook-dir=/tf --ip 0.0.0.0 --no-browser --allow-root"
+    ports:
+      - "8888:8888"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    networks:
+      - lakehouse-net
+
+networks:
+  lakehouse-net:
+    driver: bridge
