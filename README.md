@@ -1,0 +1,1 @@
+# Lakehouse_OpenSource_IA_Ativos
