@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # MinIO
+  minio:
+    image: bitnami/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password123
+    command: minio server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./volumes/minio/data:/data
+      - ./volumes/minio/config:/root/.minio
+    restart: unless-stopped
+
+  # PostgreSQL
+  postgresql:
+    image: bitnami/postgresql:latest
+    container_name: postgresql
+    environment:
+      - POSTGRESQL_PASSWORD=postgrespass
+      - POSTGRESQL_USERNAME=postgresuser
+      - POSTGRESQL_DATABASE=postgresdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./volumes/postgresql/data:/bitnami/postgresql
+    restart: unless-stopped
+
+  # Airflow
+  airflow:
+    image: bitnami/airflow:latest
+    container_name: airflow
+    depends_on:
+      - postgresql
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgresuser:postgrespass@postgresql:5432/postgresdb
+      - AIRFLOW__CORE__FERNET_KEY=xCm03biQbfFdTvcgFu-cB7xndtx-uUJC4lUnLRcO_3Q=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./volumes/airflow/dags:/opt/airflow/dags
+      - ./volumes/airflow/logs:/opt/airflow/logs
+      - ./volumes/airflow/plugins:/opt/airflow/plugins
+    restart: unless-stopped
+
+  # Trino
+  trino:
+    image: trinodb/trino:latest
+    container_name: trino
+    depends_on:
+      - minio
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./volumes/trino/etc:/etc/trino
+    restart: unless-stopped
+
+  # TensorFlow
+  tensorflow:
+    image: tensorflow/tensorflow:nightly-gpu-jupyter
+    container_name: tensorflow
+    command: bash -c "jupyter notebook --notebook-dir=/tf --ip 0.0.0.0 --no-browser --allow-root"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./volumes/tensorflow/notebooks:/tf
+    restart: unless-stopped
+
+volumes:
+  minio_data:
+    driver: local
+  postgresql_data:
+    driver: local
+  airflow_dags:
+    driver: local
+  airflow_logs:
+    driver: local
+  airflow_plugins:
+    driver: local
+  tensorflow_notebooks:
+    driver: local
