@@ -105,22 +105,6 @@ O TensorFlow com Jupyter Notebook permite o desenvolvimento de aprendizado de m�
 
 ---
 
-## Estrutura de Pastas
-
-Certifique-se de criar as seguintes pastas antes de iniciar o ambiente:
-
-```bash
-mkdir -p ./volumes/minio/data
-mkdir -p ./volumes/minio/config
-mkdir -p ./volumes/postgresql/data
-mkdir -p ./volumes/airflow/dags
-mkdir -p ./volumes/airflow/logs
-mkdir -p ./volumes/airflow/plugins
-mkdir -p ./volumes/trino/etc
-mkdir -p ./volumes/tensorflow/notebooks
-
-
-
 # Arquitetura do Projeto Lakehouse: Integração e Relações entre Tecnologias
 
 A arquitetura **Lakehouse** combina as funcionalidades de um Data Lake com as vantagens de um Data Warehouse. Cada tecnologia na arquitetura tem um papel crucial e interage de maneira sinérgica para garantir armazenamento, processamento, consulta e aprendizado de máquina eficientes. O **Delta Lake** é a tecnologia que unifica essas interações ao oferecer transações ACID, versionamento de dados e integração com formatos como o **Apache Parquet**.
