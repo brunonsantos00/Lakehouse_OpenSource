@@ -1,4 +1,4 @@
-# Lakehouse_OpenSource_IA_Ativos
+# Projeto Lakehouse OpenSource
 
 ## Documentação da Configuração do Docker Compose
 
