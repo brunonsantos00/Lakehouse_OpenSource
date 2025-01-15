@@ -1,0 +1,4 @@
+volumes/minio/data/
+volumes/airflow/
+volumes/tensorflow/
+volumes/trino/etc/data/
